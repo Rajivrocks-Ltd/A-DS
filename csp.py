@@ -46,8 +46,13 @@ class CSP:
 
         # TODO: write this function 
 
-        raise NotImplementedError()
-
+        for r in range(self.height):
+            for c in range(self.width):
+                c = (r, c)
+                self.cell_to_groups[c] = []
+                for group_idx, group in enumerate(self.groups):
+                    if c in group:
+                        self.cell_to_groups[c].append(group_idx)
 
     def satisfies_sum_constraint(self, group: typing.List[typing.Tuple[int,int]], sum_constraint: int) -> bool:
         """
@@ -61,8 +66,8 @@ class CSP:
         """
 
         # TODO: write this function
-
-        raise NotImplementedError()
+        group_sum = sum(self.grid[row_idx, col_idx] for row_idx, col_idx in group)
+        return group_sum <= sum_constraint if sum_constraint is not None else True
 
     
     def satisfies_count_constraint(self, group: typing.List[typing.Tuple[int,int]], count_constraint: int) -> bool:
@@ -79,7 +84,14 @@ class CSP:
 
         # TODO: write this function
 
-        raise NotImplementedError()
+        value_counts = {value: 0 for value in self.numbers}
+        for row_idx, col_idx in group:
+            cell_value = self.grid[row_idx, col_idx]
+            if cell_value != 0:
+                value_counts[cell_value] += 1
+                if value_counts[cell_value] > count_constraint:
+                    return False
+        return True
 
 
     def satisfies_group_constraints(self, group_indices: typing.List[int]) -> bool:
@@ -92,7 +104,20 @@ class CSP:
 
         # TODO: write this function
 
-        raise NotImplementedError()
+        for group in self.groups:
+            values = set()
+
+            # Get the current values in the group
+            for row, col in group:
+                val = self.grid[row][col]
+                if val != 0:
+                    if val in values:
+                        # If a value is repeated, the constraint is not satisfied
+                        return False
+                    values.add(val)
+
+        # If we reach this point, the constraint is satisfied
+        return True
 
 
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
@@ -109,7 +134,6 @@ class CSP:
 
         # TODO: write this function
 
-        raise NotImplementedError()
     
 
     def start_search(self):
