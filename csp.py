@@ -44,9 +44,14 @@ class CSP:
         in the __init__ function above (self.groups and self.cell_to_groups).
         """
 
-        # TODO: write this function 
+        for i in range(len(self.groups)):
+            for cell in self.groups[i]:
+                if cell not in self.cell_to_groups:
+                    self.cell_to_groups[cell] = [i]
+                else:
+                    self.cell_to_groups[cell].append(i)
 
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
 
     def satisfies_sum_constraint(self, group: typing.List[typing.Tuple[int,int]], sum_constraint: int) -> bool:
@@ -59,10 +64,21 @@ class CSP:
         :param sum_constraint: The sum_of_elements constraint specifying that the numbers in the given group must
                                sum up to this number. This is None if there is no sum constraint for the given group. 
         """
+        # Adjust this a bit because this is probably an easy one which will always geenrate this block of code.
 
-        # TODO: write this function
+        # group_sum = sum(self.grid[row_idx][col_idx] for row_idx, col_idx in group)
+        # return group_sum <= sum_constraint if sum_constraint is not None else True
 
-        raise NotImplementedError()
+        group_sum = 0
+        for row_idx, col_idx in group:
+            group_sum += self.grid[row_idx][col_idx]
+
+        if sum_constraint is not None:
+            return group_sum <= sum_constraint
+        else:
+            return True
+
+        # raise NotImplementedError()
 
     
     def satisfies_count_constraint(self, group: typing.List[typing.Tuple[int,int]], count_constraint: int) -> bool:
@@ -77,9 +93,21 @@ class CSP:
                                  This is None if there is no count constraint for the given group. 
         """
 
-        # TODO: write this function
+        counts = {}
+        for row_idx, col_idx in group:
+            value = self.grid[row_idx][col_idx]
+            if value != 0:
+                if value in counts:
+                    counts[value] += 1
+                else:
+                    counts[value] = 1
+        if not counts:
+            return True
+        if count_constraint is None:
+            return True
+        return all(count <= count_constraint for count in counts.values())
 
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
 
     def satisfies_group_constraints(self, group_indices: typing.List[int]) -> bool:
@@ -90,9 +118,17 @@ class CSP:
         :param group_indices: The indices of the groups for which we check all of the constraints 
         """
 
-        # TODO: write this function
+        for group in group_indices:
+            sum_const, count_const = self.constraints[group]
+            sum = self.satisfies_sum_constraint(self.groups[group], sum_const)
+            count = self.satisfies_count_constraint(self.groups[group], count_const)
+            if not sum or not count:
+                return False
 
-        raise NotImplementedError()
+        # Everything passed
+        return True
+
+        # raise NotImplementedError()
 
 
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
