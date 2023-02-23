@@ -119,10 +119,11 @@ class CSP:
         """
 
         for group in group_indices:
+            res = set()
             sum_const, count_const = self.constraints[group]
-            sum = self.satisfies_sum_constraint(self.groups[group], sum_const)
-            count = self.satisfies_count_constraint(self.groups[group], count_const)
-            if not sum or not count:
+            res.add(self.satisfies_sum_constraint(self.groups[group], sum_const))
+            res.add(self.satisfies_count_constraint(self.groups[group], count_const))
+            if not all(res):
                 return False
 
         # Everything passed
@@ -130,22 +131,46 @@ class CSP:
 
         # raise NotImplementedError()
 
+    def is_valid(self) -> bool:
+        """
+        Check if the current grid satisfies all the group constraints (i.e., row, column, and box constraints).
+        """
+        pass
 
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
         """
         Recursive exhaustive search function. It tries to fill in the empty_locations with permissible values
         in an attempt to find a valid solution that does not violate any of the constraints. Instead of checking all
-        possible constraints after filling in a number, it checks only the relevant group constraints using the 
-        self.cell_to_groups data structure. 
+        possible constraints after filling in a number, it checks only the relevant group constraints using the
+        self.cell_to_groups data structure.
 
         Returns None if there is no solution. Returns the filled in solution (self.grid) otherwise if a solution is found.
 
-        :param empty_locations: list of empty locations that still need a value from self.numbers 
+        :param empty_locations: list of empty locations that still need a value from self.numbers
         """
 
-        # TODO: write this function
+        if not empty_locations:
+            # Base case: all empty locations have been filled, check if the grid is valid
+            if self.is_valid():
+                return self.grid
+            else:
+                return None
 
-        raise NotImplementedError()
+        row, col = empty_locations[0]
+        for num in self.numbers:
+            if self.grid[row, col] == 0:
+                self.grid[row, col] = num
+                if self.is_valid():
+                    # If the new value is valid, continue the search with the remaining empty locations
+                    solution = self.search(empty_locations[1:])
+                    if solution is not None:
+                        # If a solution is found, return it
+                        return solution
+                self.grid[row, col] = 0  # backtrack
+
+        # If none of the permissible values leads to a solution, return None
+        return None
+
     
 
     def start_search(self):
