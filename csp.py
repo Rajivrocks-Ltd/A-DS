@@ -131,12 +131,6 @@ class CSP:
 
         # raise NotImplementedError()
 
-    def is_valid(self) -> bool:
-        """
-        Check if the current grid satisfies all the group constraints (i.e., row, column, and box constraints).
-        """
-        pass
-
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
         """
         Recursive exhaustive search function. It tries to fill in the empty_locations with permissible values
@@ -151,7 +145,7 @@ class CSP:
 
         if not empty_locations:
             # Base case: all empty locations have been filled, check if the grid is valid
-            if self.is_valid():
+            if self.satisfies_group_constraints(list(range(len(self.groups)))):
                 return self.grid
             else:
                 return None
@@ -160,7 +154,7 @@ class CSP:
         for num in self.numbers:
             if self.grid[row, col] == 0:
                 self.grid[row, col] = num
-                if self.is_valid():
+                if self.satisfies_group_constraints(list(range(len(self.groups)))):
                     # If the new value is valid, continue the search with the remaining empty locations
                     solution = self.search(empty_locations[1:])
                     if solution is not None:
