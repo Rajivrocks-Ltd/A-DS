@@ -154,12 +154,11 @@ class CSP:
         for num in self.numbers:
             if self.grid[row, col] == 0:
                 self.grid[row, col] = num
-                if self.satisfies_group_constraints(list(range(len(self.groups)))):
-                    # If the new value is valid, continue the search with the remaining empty locations
-                    solution = self.search(empty_locations[1:])
-                    if solution is not None:
-                        # If a solution is found, return it
-                        return solution
+                # Continue the search with the remaining empty locations
+                solution = self.search(empty_locations[1:])
+                if solution is not None:
+                    # If a solution is found, return it
+                    return solution
                 self.grid[row, col] = 0  # backtrack
 
         # If none of the permissible values leads to a solution, return None
