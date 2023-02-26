@@ -117,7 +117,8 @@ class CSP:
 
         :param group_indices: The indices of the groups for which we check all of the constraints 
         """
-
+        if not self.constraints:
+            return True
         for group in group_indices:
             res = set()
             sum_const, count_const = self.constraints[group]
@@ -177,5 +178,7 @@ class CSP:
 
         self.fill_cell_to_groups()
         empty_locations = [(row_idx, col_idx) for row_idx in range(self.height) for col_idx in range(self.width) if self.grid[row_idx,col_idx]==0]
-        return self.search(empty_locations)
+        result = self.search(empty_locations)
+        print(result)
+        return result
     
