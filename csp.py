@@ -44,14 +44,17 @@ class CSP:
         in the __init__ function above (self.groups and self.cell_to_groups).
         """
 
+        # loop over each group
         for i in range(len(self.groups)):
+            # loop over each cell in the group
             for cell in self.groups[i]:
+                # if the cell has not been added to any group yet, add it to this one
                 if cell not in self.cell_to_groups:
                     self.cell_to_groups[cell] = [i]
+                # if the cell has been added to a group before, add this group to the list of groups for the cell
                 else:
                     self.cell_to_groups[cell].append(i)
 
-        # raise NotImplementedError()
 
 
     def satisfies_sum_constraint(self, group: typing.List[typing.Tuple[int,int]], sum_constraint: int) -> bool:
@@ -69,16 +72,16 @@ class CSP:
         # group_sum = sum(self.grid[row_idx][col_idx] for row_idx, col_idx in group)
         # return group_sum <= sum_constraint if sum_constraint is not None else True
 
+        # Calculate the sum of the numbers in the group using a for loop
         group_sum = 0
         for row_idx, col_idx in group:
             group_sum += self.grid[row_idx][col_idx]
 
+        # Check if the sum of the group satisfies the given sum_constraint
         if sum_constraint is not None:
             return group_sum <= sum_constraint
         else:
             return True
-
-        # raise NotImplementedError()
 
     
     def satisfies_count_constraint(self, group: typing.List[typing.Tuple[int,int]], count_constraint: int) -> bool:
@@ -93,21 +96,27 @@ class CSP:
                                  This is None if there is no count constraint for the given group. 
         """
 
+        # Create an empty dictionary to store the count of each value in the group.
         counts = {}
+        # Iterate over each cell in the group.
         for row_idx, col_idx in group:
+            # Get the value of the current cell.
             value = self.grid[row_idx][col_idx]
+            # If the value is not 0, increment its count in the dictionary.
             if value != 0:
                 if value in counts:
                     counts[value] += 1
                 else:
                     counts[value] = 1
+        # If the dictionary is empty, then the group is vacuously true for any count constraint.
         if not counts:
             return True
+        # If there is no count constraint, then the group satisfies any possible count.
         if count_constraint is None:
             return True
+        # Check that the count of each value is less than or equal to the count constraint.
         return all(count <= count_constraint for count in counts.values())
 
-        # raise NotImplementedError()
 
 
     def satisfies_group_constraints(self, group_indices: typing.List[int]) -> bool:
@@ -117,20 +126,22 @@ class CSP:
 
         :param group_indices: The indices of the groups for which we check all of the constraints 
         """
-        if not self.constraints:
-            return True
+
+        # Loop over groups to check their constraints
         for group in group_indices:
-            res = set()
+            res = []
+            # Get sum and count constraints for this group
             sum_const, count_const = self.constraints[group]
-            res.add(self.satisfies_sum_constraint(self.groups[group], sum_const))
-            res.add(self.satisfies_count_constraint(self.groups[group], count_const))
+            # Check whether sum constraint is satisfied
+            res.append(self.satisfies_sum_constraint(self.groups[group], sum_const))
+            # Check whether count constraint is satisfied
+            res.append(self.satisfies_count_constraint(self.groups[group], count_const))
+            # If any of the constraints are not satisfied, return False
             if not all(res):
                 return False
 
         # Everything passed
         return True
-
-        # raise NotImplementedError()
 
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
         """
@@ -178,7 +189,5 @@ class CSP:
 
         self.fill_cell_to_groups()
         empty_locations = [(row_idx, col_idx) for row_idx in range(self.height) for col_idx in range(self.width) if self.grid[row_idx,col_idx]==0]
-        result = self.search(empty_locations)
-        print(result)
-        return result
+        return self.search(empty_locations)
     

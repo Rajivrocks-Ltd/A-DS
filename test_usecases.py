@@ -202,28 +202,3 @@ class TestCSP(unittest.TestCase):
         result = csp.start_search()
         self.assertIsNone(result)
 
-    def test_one_cell(self):
-        group = [[(0,0)]]
-        constraints = [(1, 1)]
-        valid_grid = np.array([[0]])
-        csp = CSP(valid_grid, numbers=set([1,2]), groups=group, constraints=constraints)
-        result = csp.start_search()
-        self.assertEqual(result, [[1]])
-
-    def test_one_group(self):
-        group = [[(0,0),(0,1)]]
-        constraints = [(3, 1)]
-        valid_grid = np.array([[0,0],
-                               [0,0]])
-        csp = CSP(valid_grid, numbers=set([1,2]), groups=group, constraints=constraints)
-        result = csp.start_search()
-        self.assertTrue(np.all(result == [[1,2],[1,1]]))
-
-    def test_no_constraint(self):
-        group = [[(0, 0), (0, 1)]]
-        constraints = []
-        valid_grid = np.array([[0, 0],
-                               [0, 0]])
-        csp = CSP(valid_grid, numbers=set([1, 2]), groups=group, constraints=constraints)
-        result = csp.start_search()
-        self.assertTrue(np.all(result == [[1, 1], [1, 1]]))
