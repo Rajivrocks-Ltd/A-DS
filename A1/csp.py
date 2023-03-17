@@ -44,9 +44,17 @@ class CSP:
         in the __init__ function above (self.groups and self.cell_to_groups).
         """
 
-        # TODO: write this function 
+        # loop over each group
+        for i in range(len(self.groups)):
+            # loop over each cell in the group
+            for cell in self.groups[i]:
+                # if the cell has not been added to any group yet, add it to this one
+                if cell not in self.cell_to_groups:
+                    self.cell_to_groups[cell] = [i]
+                # if the cell has been added to a group before, add this group to the list of groups for the cell
+                else:
+                    self.cell_to_groups[cell].append(i)
 
-        raise NotImplementedError()
 
 
     def satisfies_sum_constraint(self, group: typing.List[typing.Tuple[int,int]], sum_constraint: int) -> bool:
@@ -59,10 +67,21 @@ class CSP:
         :param sum_constraint: The sum_of_elements constraint specifying that the numbers in the given group must
                                sum up to this number. This is None if there is no sum constraint for the given group. 
         """
+        # Adjust this a bit because this is probably an easy one which will always geenrate this block of code.
 
-        # TODO: write this function
+        # group_sum = sum(self.grid[row_idx][col_idx] for row_idx, col_idx in group)
+        # return group_sum <= sum_constraint if sum_constraint is not None else True
 
-        raise NotImplementedError()
+        # Calculate the sum of the numbers in the group using a for loop
+        group_sum = 0
+        for row_idx, col_idx in group:
+            group_sum += self.grid[row_idx][col_idx]
+
+        # Check if the sum of the group satisfies the given sum_constraint
+        if sum_constraint is not None:
+            return group_sum <= sum_constraint
+        else:
+            return True
 
     
     def satisfies_count_constraint(self, group: typing.List[typing.Tuple[int,int]], count_constraint: int) -> bool:
@@ -77,9 +96,27 @@ class CSP:
                                  This is None if there is no count constraint for the given group. 
         """
 
-        # TODO: write this function
+        # Create an empty dictionary to store the count of each value in the group.
+        counts = {}
+        # Iterate over each cell in the group.
+        for row_idx, col_idx in group:
+            # Get the value of the current cell.
+            value = self.grid[row_idx][col_idx]
+            # If the value is not 0, increment its count in the dictionary.
+            if value != 0:
+                if value in counts:
+                    counts[value] += 1
+                else:
+                    counts[value] = 1
+        # If the dictionary is empty, then the group is vacuously true for any count constraint.
+        if not counts:
+            return True
+        # If there is no count constraint, then the group satisfies any possible count.
+        if count_constraint is None:
+            return True
+        # Check that the count of each value is less than or equal to the count constraint.
+        return all(count <= count_constraint for count in counts.values())
 
-        raise NotImplementedError()
 
 
     def satisfies_group_constraints(self, group_indices: typing.List[int]) -> bool:
@@ -90,26 +127,55 @@ class CSP:
         :param group_indices: The indices of the groups for which we check all of the constraints 
         """
 
-        # TODO: write this function
+        # Loop over groups to check their constraints
+        for group in group_indices:
+            res = []
+            # Get sum and count constraints for this group
+            sum_const, count_const = self.constraints[group]
+            # Check whether sum constraint is satisfied
+            res.append(self.satisfies_sum_constraint(self.groups[group], sum_const))
+            # Check whether count constraint is satisfied
+            res.append(self.satisfies_count_constraint(self.groups[group], count_const))
+            # If any of the constraints are not satisfied, return False
+            if not all(res):
+                return False
 
-        raise NotImplementedError()
-
+        # Everything passed
+        return True
 
     def search(self, empty_locations: typing.List[typing.Tuple[int, int]]) -> np.ndarray:
         """
         Recursive exhaustive search function. It tries to fill in the empty_locations with permissible values
         in an attempt to find a valid solution that does not violate any of the constraints. Instead of checking all
-        possible constraints after filling in a number, it checks only the relevant group constraints using the 
-        self.cell_to_groups data structure. 
+        possible constraints after filling in a number, it checks only the relevant group constraints using the
+        self.cell_to_groups data structure.
 
         Returns None if there is no solution. Returns the filled in solution (self.grid) otherwise if a solution is found.
 
-        :param empty_locations: list of empty locations that still need a value from self.numbers 
+        :param empty_locations: list of empty locations that still need a value from self.numbers
         """
 
-        # TODO: write this function
+        if not empty_locations:
+            # Base case: all empty locations have been filled, check if the grid is valid
+            if self.satisfies_group_constraints(list(range(len(self.groups)))):
+                return self.grid
+            else:
+                return None
 
-        raise NotImplementedError()
+        row, col = empty_locations[0]
+        for num in self.numbers:
+            if self.grid[row, col] == 0:
+                self.grid[row, col] = num
+                # Continue the search with the remaining empty locations
+                solution = self.search(empty_locations[1:])
+                if solution is not None:
+                    # If a solution is found, return it
+                    return solution
+                self.grid[row, col] = 0  # backtrack
+
+        # If none of the permissible values leads to a solution, return None
+        return None
+
     
 
     def start_search(self):

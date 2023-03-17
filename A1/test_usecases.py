@@ -153,7 +153,7 @@ class TestCSP(unittest.TestCase):
         solution_grid = np.array([[2,1,0],
                                   [1,2,0]])
 
-        self.assertTrue(np.all(solution_grid[:2,:2] == result[:2,:2]))
+        self.assertTrue(np.all(solution_grid[:2, :2] == result[:2, :2]))
     
 
     def test_search_medium(self):
@@ -201,3 +201,4 @@ class TestCSP(unittest.TestCase):
         csp = CSP(valid_grid, numbers=set([1,2]), groups=groups, constraints=constraints)
         result = csp.start_search()
         self.assertIsNone(result)
+
