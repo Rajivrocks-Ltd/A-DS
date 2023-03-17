@@ -49,8 +49,15 @@ class IntelDevice:
         Returns: the encoded message
         """
 
+        encoded_msg = ""
+        for char in msg:
+            shifted_ord = ord(char) + self.caesar_shift
+            bitstring = "{0:b}".format(shifted_ord)
+            encoded_msg += bitstring + " "
+        return encoded_msg[:len(encoded_msg)-1]
+
         # TODO
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
     
     def decode_message(self, msg: str) -> str:
@@ -64,8 +71,23 @@ class IntelDevice:
         Returns: the decoded message
         """
 
+        # Split the encoded message into a list of bitstrings
+        bit_strings = msg.split()
+
+        # Convert each bitstring to an integer and decode it
+        decoded_chars = []
+        for bitstring in bit_strings:
+            num = int(bitstring, 2)
+            shifted_num = num - self.caesar_shift
+            char = chr(shifted_num)
+            decoded_chars.append(char)
+
+        # Join the decoded characters to form the decoded message
+        decoded_msg = ''.join(decoded_chars)
+        return decoded_msg
+
         # TODO
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
 
     def fill_coordinate_to_loc(self):
@@ -83,8 +105,13 @@ class IntelDevice:
         The function does not return anything. It simply fills the self.coordinate_to_location data structure with the right mapping.
         """
 
+        for y in range(self.loc_grid.shape[0]):
+            for x in range(self.loc_grid.shape[1]):
+                idx = y * self.loc_grid.shape[1] + x
+                self.coordinate_to_location[(y, x)] = self.decode_message(self.enc_locations[idx])
+
         # TODO
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
     def fill_loc_grid(self):
         """
@@ -98,9 +125,27 @@ class IntelDevice:
 
         The function does not return anything. It simply fills the self.loc_grid data structure with the decoded codes.
         """
+        # Calculate number of rows and columns in loc_grid
+        rows = len(self.enc_codes) // self.height
+        cols = self.height
+
+        # If there are extra codes that don't fit in the last row, add another row
+        if len(self.enc_codes) % cols != 0:
+            rows += 1
+
+        # Initialize loc_grid with zeros
+        self.loc_grid = np.zeros((rows, cols), dtype=int)
+
+        # Fill in loc_grid with decoded codes
+        for i in range(rows):
+            for j in range(cols):
+                index = i * cols + j
+                if index >= len(self.enc_codes):
+                    break
+                self.loc_grid[i][j] = int(self.decode_message(self.enc_codes[index]))
 
         # TODO
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
 
     def divconq_search(self, value: int, x_from: int, x_to: int, y_from: int, y_to: int) -> typing.Tuple[int, int]:
@@ -131,8 +176,51 @@ class IntelDevice:
           A tuple (y,x) specifying the location where the value was found (if the value occurs in the subrectangle)
 
         """
+
+        # Check if the search range is valid
+        if x_from > x_to or y_from > y_to:
+            return None
+
+        # Check if the range contains zero elements
+        if x_from == x_to and y_from == y_to:
+            if self.loc_grid[y_from][x_from] == value:
+                return (y_from, x_from)
+            else:
+                return None
+
+        mid_x = (x_from + x_to) // 2
+        mid_y = (y_from + y_to) // 2
+
+        # Check if the middle element matches the search value
+        mid_val = self.loc_grid[mid_y][mid_x]
+        if mid_val == value:
+            return (mid_y, mid_x)
+
+        # Recursively search the top-left quadrant
+        top_left = self.divconq_search(value, x_from, mid_x, y_from, mid_y)
+        if top_left is not None:
+            return top_left
+
+        # Recursively search the top-right quadrant
+        top_right = self.divconq_search(value, mid_x + 1, x_to, y_from, mid_y)
+        if top_right is not None:
+            return top_right
+
+        # Recursively search the bottom-left quadrant
+        bottom_left = self.divconq_search(value, x_from, mid_x, mid_y + 1, y_to)
+        if bottom_left is not None:
+            return bottom_left
+
+        # Recursively search the bottom-right quadrant
+        bottom_right = self.divconq_search(value, mid_x + 1, x_to, mid_y + 1, y_to)
+        if bottom_right is not None:
+            return bottom_right
+
+        # If the search value is not found in any quadrant, return None
+        return None
+
         # TODO
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
     def start_search(self, value) -> str:
         """
@@ -155,5 +243,6 @@ class IntelDevice:
         if result is None:
             return result
         else:
+            # print(self.encode_message(self.coordinate_to_location[result]))
             return self.encode_message(self.coordinate_to_location[result])
         
