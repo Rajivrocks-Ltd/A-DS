@@ -54,7 +54,7 @@ class IntelDevice:
             shifted_ord = ord(char) + self.caesar_shift
             bitstring = "{0:b}".format(shifted_ord)
             encoded_msg += bitstring + " "
-        return encoded_msg[:len(encoded_msg)-1]
+        return encoded_msg[:-1]
 
         # TODO
         # raise NotImplementedError()
@@ -126,8 +126,8 @@ class IntelDevice:
         The function does not return anything. It simply fills the self.loc_grid data structure with the decoded codes.
         """
         # Calculate number of rows and columns in loc_grid
-        rows = len(self.enc_codes) // self.height
-        cols = self.height
+        rows = self.height
+        cols = self.width
 
         # If there are extra codes that don't fit in the last row, add another row
         if len(self.enc_codes) % cols != 0:
@@ -176,7 +176,6 @@ class IntelDevice:
           A tuple (y,x) specifying the location where the value was found (if the value occurs in the subrectangle)
 
         """
-
         # Check if the search range is valid
         if x_from > x_to or y_from > y_to:
             return None
@@ -187,6 +186,7 @@ class IntelDevice:
                 return (y_from, x_from)
             else:
                 return None
+
 
         mid_x = (x_from + x_to) // 2
         mid_y = (y_from + y_to) // 2
@@ -211,7 +211,7 @@ class IntelDevice:
         if bottom_left is not None:
             return bottom_left
 
-        # Recursively search the bottom-right quadrant
+        # Check if the search value is in the bottom-right quadrant
         bottom_right = self.divconq_search(value, mid_x + 1, x_to, mid_y + 1, y_to)
         if bottom_right is not None:
             return bottom_right
@@ -243,6 +243,5 @@ class IntelDevice:
         if result is None:
             return result
         else:
-            # print(self.encode_message(self.coordinate_to_location[result]))
             return self.encode_message(self.coordinate_to_location[result])
         
