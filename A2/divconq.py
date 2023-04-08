@@ -25,7 +25,7 @@ class IntelDevice:
         self.caesar_shift = caesar_shift
 
         self.loc_grid = np.zeros((height, width))
-        self.coordinate_to_location = dict() # maps locations (y,x) to their names 
+        self.coordinate_to_location = dict() # maps locations (y,x) to their names
 
 
     def encode_message(self, msg:str) -> str:
