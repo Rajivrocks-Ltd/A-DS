@@ -187,34 +187,47 @@ class IntelDevice:
             else:
                 return None
 
+        mid_x = (x_from + x_to) // 2
         mid_y = (y_from + y_to) // 2
 
-        # Check if the value being searched for is smaller than the last element in the row
-        # If so it means the value must be in this row
-        if value <= self.loc_grid[mid_y][-1]:
-            # If the value is smaller than or equal to the last element, perform a binary search to find its location
-            left = x_from
-            right = x_to
-            while left <= right:
-                mid_x = (left + right) // 2
-                if self.loc_grid[mid_y][mid_x] == value:
-                    return (mid_y, mid_x)
-                elif self.loc_grid[mid_y][mid_x] < value:
-                    left = mid_x + 1
-                else:
-                    right = mid_x - 1
+        # Check if the middle element matches the search value
+        mid_val = self.loc_grid[mid_y][mid_x]
+        if mid_val == value:
+            return (mid_y, mid_x)
 
-        # Recursively search the top half of the search range
-        top_half = self.divconq_search(value, x_from, x_to, y_from, mid_y - 1)
-        if top_half is not None:
-            return top_half
+        if mid_val > value:
+            # Recursively search the top-left quadrant
+            top_left = self.divconq_search(value, x_from, mid_x, y_from, mid_y)
+            if top_left is not None:
+                return top_left
 
-        # Recursively search the bottom half of the search range
-        bottom_half = self.divconq_search(value, x_from, x_to, mid_y + 1, y_to)
-        if bottom_half is not None:
-            return bottom_half
+            # Recursively search the top-right quadrant
+            top_right = self.divconq_search(value, mid_x + 1, x_to, y_from, mid_y)
+            if top_right is not None:
+                return top_right
 
-        # If the search value is not found, return None
+            # Recursively search the bottom-left quadrant
+            bottom_left = self.divconq_search(value, x_from, mid_x, mid_y + 1, y_to)
+            if bottom_left is not None:
+                return bottom_left
+
+        else:
+            # Recursively search the top-right quadrant
+            top_right = self.divconq_search(value, mid_x + 1, x_to, y_from, mid_y)
+            if top_right is not None:
+                return top_right
+
+            # Recursively search the bottom-left quadrant
+            bottom_left = self.divconq_search(value, x_from, mid_x, mid_y + 1, y_to)
+            if bottom_left is not None:
+                return bottom_left
+
+            # Check if the search value is in the bottom-right quadrant
+            bottom_right = self.divconq_search(value, mid_x + 1, x_to, mid_y + 1, y_to)
+            if bottom_right is not None:
+                return bottom_right
+
+        # If the search value is not found in any quadrant, return None
         return None
 
 
