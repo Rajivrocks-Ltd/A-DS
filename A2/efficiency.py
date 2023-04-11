@@ -15,20 +15,19 @@ def naive_linear_scan(grid, value):
     return num_cells_searched
 
 
-def divconq_search(value: int, x_from: int, x_to: int, y_from: int, y_to: int, cells_searched: int,
+def div_con_search(value: int, x_from: int, x_to: int, y_from: int, y_to: int,
                    search_grid: typing.List[typing.List[int]]) -> typing.Tuple[int, int, int]:
 
     # Check if the search range is valid
     if x_from > x_to or y_from > y_to:
-        return None
+        return None, None, 0
 
     # Check if the range contains zero elements
     if x_from == x_to and y_from == y_to:
-        cells_searched += 1
         if search_grid[y_from][x_from] == value:
-            return (y_from, x_from, cells_searched)
+            return (y_from, x_from, 1)
         else:
-            return None
+            return None, None, 0
 
     mid_x = (x_from + x_to) // 2
     mid_y = (y_from + y_to) // 2
@@ -36,47 +35,50 @@ def divconq_search(value: int, x_from: int, x_to: int, y_from: int, y_to: int, c
     # Check if the middle element matches the search value
     mid_val = search_grid[mid_y][mid_x]
     if mid_val == value:
-        cells_searched += 1
-        return (mid_y, mid_x, cells_searched)
+        return (mid_y, mid_x, 1)
 
     if mid_val > value:
         # Recursively search the top-left quadrant
-        top_left = divconq_search(value, x_from, mid_x, y_from, mid_y, cells_searched, search_grid)
-        if top_left is not None:
-            return top_left
+        y, x, count_tl = div_con_search(value, x_from, mid_x, y_from, mid_y, search_grid)
+        if all((y,x)):
+            return (y , x, count_tl + 1)
 
         # Recursively search the top-right quadrant
-        top_right = divconq_search(value, mid_x + 1, x_to, y_from, mid_y, cells_searched, search_grid)
-        if top_right is not None:
-            return top_right
+        y, x, count_tr = div_con_search(value, mid_x + 1, x_to, y_from, mid_y, search_grid)
+        if all((y,x)):
+            return (y, x, count_tr + 1)
 
         # Recursively search the bottom-left quadrant
-        bottom_left = divconq_search(value, x_from, mid_x, mid_y + 1, y_to, cells_searched, search_grid)
-        if bottom_left is not None:
-            return bottom_left
+        y, x, count_bl = div_con_search(value, x_from, mid_x, mid_y + 1, y_to, search_grid)
+        if all((y,x)):
+            return (y, x, count_bl + 1)
+
+        count = count_tl + count_tr + count_bl
 
     else:
         # Recursively search the top-right quadrant
-        top_right = divconq_search(value, mid_x + 1, x_to, y_from, mid_y, cells_searched, search_grid)
-        if top_right is not None:
-            return top_right
+        y, x, count_tr = div_con_search(value, mid_x + 1, x_to, y_from, mid_y, search_grid)
+        if all((y,x)):
+            return (y, x, count_tr + 1)
 
         # Recursively search the bottom-left quadrant
-        bottom_left = divconq_search(value, x_from, mid_x, mid_y + 1, y_to, cells_searched, search_grid)
-        if bottom_left is not None:
-            return bottom_left
+        y, x, count_bl = div_con_search(value, x_from, mid_x, mid_y + 1, y_to, search_grid)
+        if all((y,x)):
+            return (y, x, count_bl + 1)
 
         # Check if the search value is in the bottom-right quadrant
-        bottom_right = divconq_search(value, mid_x + 1, x_to, mid_y + 1, y_to, cells_searched, search_grid)
-        if bottom_right is not None:
-            return bottom_right
+        y, x, count_br = div_con_search(value, mid_x + 1, x_to, mid_y + 1, y_to, search_grid)
+        if all((y,x)):
+            return (y, x, count_br + 1)
+
+        count = count_br + count_bl + count_tr
 
     # If the search value is not found in any quadrant, return None
-    return None
+    return None, None, count
 
 
 def generate_grid(size):
-    grid = [[(i * size) + j + 1 for j in range(size)] for i in range(size)]
+    grid = np.arange(1, size*size+1).reshape(size, size)
     return grid
 
 
@@ -97,13 +99,13 @@ for size in grid_sizes:
     linear_scan_times.append(linear_scan_time)
 
     start_time = time.perf_counter()
-    divconq_result = divconq_search(search_value, 0, size - 1, 0, size - 1, 0, grid)
+    divconq_result = div_con_search(search_value, 0, size - 1, 0, size - 1, grid)
     divconq_time = time.perf_counter() - start_time
     divconq_cells.append(divconq_result[2])
     divconq_times.append(divconq_time)
 
 print("-"*50)
-for item in linear_scan_times:
+for item in divconq_cells:
     print(item)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
