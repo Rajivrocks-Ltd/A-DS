@@ -49,15 +49,13 @@ class IntelDevice:
         Returns: the encoded message
         """
 
-        encoded_msg = ""
-        for char in msg:
-            shifted_ord = ord(char) + self.caesar_shift
-            bitstring = "{0:b}".format(shifted_ord)
-            encoded_msg += bitstring + " "
-        return encoded_msg[:-1]
-
-        # TODO
-        # raise NotImplementedError()
+        encoded_msg = ""  # initialize an empty string to store the encoded message
+        for char in msg:  # loop over each character in the input message
+            shifted_ord = ord(
+                char) + self.caesar_shift  # calculate the shifted ordinal representation of the current character
+            bitstring = "{0:b}".format(shifted_ord)  # convert the shifted ordinal to a bitstring
+            encoded_msg += bitstring + " "  # add the bitstring to the encoded message, separated by a space
+        return encoded_msg[:-1]  # remove the last space and return the encoded message
 
     
     def decode_message(self, msg: str) -> str:
@@ -77,17 +75,14 @@ class IntelDevice:
         # Convert each bitstring to an integer and decode it
         decoded_chars = []
         for bitstring in bit_strings:
-            num = int(bitstring, 2)
-            shifted_num = num - self.caesar_shift
-            char = chr(shifted_num)
-            decoded_chars.append(char)
+            num = int(bitstring, 2) # Convert bitstring to an integer
+            shifted_num = num - self.caesar_shift # Reverse the Caesar shift
+            char = chr(shifted_num) # Convert the shifted number back to a character
+            decoded_chars.append(char) # Add the decoded character to a list
 
         # Join the decoded characters to form the decoded message
         decoded_msg = ''.join(decoded_chars)
         return decoded_msg
-
-        # TODO
-        # raise NotImplementedError()
 
 
     def fill_coordinate_to_loc(self):
@@ -105,13 +100,15 @@ class IntelDevice:
         The function does not return anything. It simply fills the self.coordinate_to_location data structure with the right mapping.
         """
 
+        # Iterate over every coordinate in the loc_grid
         for y in range(self.loc_grid.shape[0]):
             for x in range(self.loc_grid.shape[1]):
+                # Calculate the index of the corresponding encoded location in self.enc_locations
                 idx = y * self.loc_grid.shape[1] + x
+
+                # Decode the encoded location and add it to the coordinate_to_location mapping
                 self.coordinate_to_location[(y, x)] = self.decode_message(self.enc_locations[idx])
 
-        # TODO
-        # raise NotImplementedError()
 
     def fill_loc_grid(self):
         """
@@ -140,12 +137,11 @@ class IntelDevice:
         for i in range(rows):
             for j in range(cols):
                 index = i * cols + j
+                # If we have already used up all the codes, break out of the loop
                 if index >= len(self.enc_codes):
                     break
+                # Decode the code and add it to loc_grid
                 self.loc_grid[i][j] = int(self.decode_message(self.enc_codes[index]))
-
-        # TODO
-        # raise NotImplementedError()
 
 
     def divconq_search(self, value: int, x_from: int, x_to: int, y_from: int, y_to: int) -> typing.Tuple[int, int]:
@@ -180,7 +176,7 @@ class IntelDevice:
         if x_from > x_to or y_from > y_to:
             return None
 
-        # Check if the range contains zero elements
+        # if there is one cell, check if that value is the value being searched for
         if x_from == x_to and y_from == y_to:
             if self.loc_grid[y_from][x_from] == value:
                 return (y_from, x_from)
@@ -230,9 +226,6 @@ class IntelDevice:
         # If the search value is not found in any quadrant, return None
         return None
 
-
-        # TODO
-        # raise NotImplementedError()
 
     def start_search(self, value) -> str:
         """

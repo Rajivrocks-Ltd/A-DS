@@ -42,40 +42,40 @@ def div_con_search(value: int, x_from: int, x_to: int, y_from: int, y_to: int,
     if mid_val > value:
         # Recursively search the top-left quadrant
         y, x, count_tl = div_con_search(value, x_from, mid_x, y_from, mid_y, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y , x, count_tl + 1)
 
         # Recursively search the top-right quadrant
         y, x, count_tr = div_con_search(value, mid_x + 1, x_to, y_from, mid_y, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y, x, count_tr + 1)
 
         # Recursively search the bottom-left quadrant
         y, x, count_bl = div_con_search(value, x_from, mid_x, mid_y + 1, y_to, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y, x, count_bl + 1)
 
         countvar += count_tl
         countvar += count_tr
-        countvar += count_bl
+        # countvar += count_bl
 
     else:
         # Recursively search the top-right quadrant
         y, x, count_tr = div_con_search(value, mid_x + 1, x_to, y_from, mid_y, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y, x, count_tr + 1)
 
         # Recursively search the bottom-left quadrant
         y, x, count_bl = div_con_search(value, x_from, mid_x, mid_y + 1, y_to, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y, x, count_bl + 1)
 
         # Check if the search value is in the bottom-right quadrant
         y, x, count_br = div_con_search(value, mid_x + 1, x_to, mid_y + 1, y_to, search_grid, countvar)
-        if all((y,x)):
+        if all(item is not None for item in (y, x)):
             return (y, x, count_br + 1)
 
-        countvar += count_br
+        # countvar += count_br
         countvar += count_bl
         countvar += count_tr
 
@@ -84,52 +84,68 @@ def div_con_search(value: int, x_from: int, x_to: int, y_from: int, y_to: int,
 
 
 def generate_grid(size):
-    grid = np.arange(1, size*size+1).reshape(size, size)
-    return grid
+    two_d_grid = np.arange(1, size*size+1).reshape(size, size)
+    return two_d_grid
 
-
-grid_sizes = [5,10,100,200,400,800,1600,3200,6400,9600,19200,38400]
+grid_sizes = [5]
 linear_scan_cells = []
 divconq_cells = []
 linear_scan_times = []
 divconq_times = []
 
-for size in grid_sizes:
-    counter = 0
-    grid = generate_grid(size)
-    search_value = grid[-1][-1]
+res = np.array([[1,2,3],
+                [4,5,6],
+               [7,8,9]])
+
+x = res.reshape(-1)
+
+for num in x:
+    search_value = num
 
     start_time = time.perf_counter()
-    linear_scan_result = naive_linear_scan(grid, search_value)
-    linear_scan_time = time.perf_counter() - start_time
-    linear_scan_cells.append(linear_scan_result)
-    linear_scan_times.append(linear_scan_time)
-
-    start_time = time.perf_counter()
-    divconq_result = div_con_search(search_value, 0, size - 1, 0, size - 1, grid, 0)
+    divconq_result = div_con_search(search_value, 0, 4 - 1, 0, 3 - 1, res, 0)
     divconq_time = time.perf_counter() - start_time
-    divconq_cells.append(divconq_result[2])
+    divconq_cells.append(divconq_result)
     divconq_times.append(divconq_time)
 
-for item in divconq_cells:
-    print(item)
+print(divconq_cells)
 
-print("-"*50)
-for item in divconq_times:
-    print(item)
+# for size in grid_sizes:
+#     counter = 0
+#     grid = generate_grid(size)
+#     search_value = grid[-1][-1]
+#
+#     start_time = time.perf_counter()
+#     linear_scan_result = naive_linear_scan(grid, search_value)
+#     linear_scan_time = time.perf_counter() - start_time
+#     linear_scan_cells.append(linear_scan_result)
+#     linear_scan_times.append(linear_scan_time)
+#
+#     start_time = time.perf_counter()
+#     divconq_result = div_con_search(search_value, 0, size - 1, 0, size - 1, grid, 0)
+#     divconq_time = time.perf_counter() - start_time
+#     divconq_cells.append(divconq_result[2])
+#     divconq_times.append(divconq_time)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
-
-ax1.plot(grid_sizes, linear_scan_cells, 'r', label='Naive Linear Scan')
-ax1.plot(grid_sizes, divconq_cells, 'b', label='Divide and Conquer')
-ax1.set_xlabel('Grid Size')
-ax1.set_ylabel('Cells Searched')
-ax1.legend()
-
-ax2.plot(grid_sizes, linear_scan_times, 'r', label='Naive Linear Scan')
-ax2.plot(grid_sizes, divconq_times, 'b', label='Divide and Conquer')
-ax2.set_xlabel('Grid Size')
-ax2.set_ylabel('Time (s)')
-ax2.legend()
+# for item in divconq_cells:
+#     print(item)
+#
+# print("-"*50)
+# for item in divconq_times:
+#     print(item)
+#
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+#
+# ax1.plot(grid_sizes, linear_scan_cells, 'r', label='Naive Linear Scan')
+# ax1.plot(grid_sizes, divconq_cells, 'b', label='Divide and Conquer')
+# ax1.set_xlabel('Grid Size')
+# ax1.set_ylabel('Cells Searched')
+# ax1.legend()
+#
+# ax2.plot(grid_sizes, linear_scan_times, 'r', label='Naive Linear Scan')
+# ax2.plot(grid_sizes, divconq_times, 'b', label='Divide and Conquer')
+# ax2.set_xlabel('Grid Size')
+# ax2.set_ylabel('Time (s)')
+# ax2.legend()
 
 plt.show()
