@@ -105,7 +105,7 @@ class DroneExtinguisher:
         if self.idle_cost[i, j] != -1:
             return self.idle_cost[i, j]
 
-            # Compute the amount of water in the bags
+        # Compute the amount of water in the bags
         total_water = sum(self.bags[i:j + 1])
 
         # Compute the total cost of transporting the bags to the forest and back
@@ -124,10 +124,10 @@ class DroneExtinguisher:
         """
         Function that transforms the amount of time that we are idle on a day if we empty self.bags[i:j+1]
         on a day (idle_time_in_liters) into a quantity that we want to directly optimize using the formula
-        in the assignment description. 
-        If transporting self.bags[i:j+1] is not possible within a day, we should return np.inf as cost. 
-        Moreover, if self.bags[i:j+1] are the last bags that are transported on the final day, the idle cost is 0 
-        as the operation has been completed. In all other cases, we use the formula from the assignment text. 
+        in the assignment description.
+        If transporting self.bags[i:j+1] is not possible within a day, we should return np.inf as cost.
+        Moreover, if self.bags[i:j+1] are the last bags that are transported on the final day, the idle cost is 0
+        as the operation has been completed. In all other cases, we use the formula from the assignment text.
 
         You may not need to use every argument of this function
 
@@ -138,6 +138,7 @@ class DroneExtinguisher:
         Returns
           - integer: the cost of being idle on a day corresponding to idle_time_in_liters
         """
+
         # Compute the total amount of water that needs to be transported
         total_liters = np.sum(self.bags[i:j+1])
 
@@ -146,15 +147,18 @@ class DroneExtinguisher:
         if total_liters > self.liter_budget_per_day:
             return np.inf
 
+
         # If the bags are the last ones to be transported on the final day, the idle cost is 0
         if j == len(self.bags) - 1:
             return 0
+
 
         # Compute the idle cost using the formula from the assignment text
         if total_liters == self.liter_budget_per_day:
             return 0
 
-        idle_cost = ((idle_time_in_liters * (self.liter_budget_per_day)) / self.liter_budget_per_day) ** len(self.bags)
+
+        idle_cost = idle_time_in_liters ** len(self.bags)
 
         return idle_cost
 
