@@ -4,8 +4,8 @@ import typing
 
 
 class DroneExtinguisher:
-    def __init__(self, forest_location: typing.Tuple[float, float], bags: typing.List[int], 
-                 bag_locations: typing.List[typing.Tuple[float, float]], 
+    def __init__(self, forest_location: typing.Tuple[float, float], bags: typing.List[int],
+                 bag_locations: typing.List[typing.Tuple[float, float]],
                  liter_cost_per_km: float, liter_budget_per_day: int, usage_cost: np.ndarray):
         """
         The DroneExtinguisher object. This object contains all functions necessary to compute the most optimal way of saving the forest
@@ -142,28 +142,25 @@ class DroneExtinguisher:
         # Compute the total amount of water that needs to be transported
         total_liters = np.sum(self.bags[i:j+1])
 
+        # If the bags are the last ones to be transported on the final day, the idle cost is 0
+        if j == len(self.bags) - 1 and idle_time_in_liters > 0:
+            return 0
+
         # If the amount of water is larger than the maximum amount that can be transported in a day,
         # return np.inf as cost (it is not possible to transport the water in a single day)
         if total_liters > self.liter_budget_per_day:
             return np.inf
 
-
-        # If the bags are the last ones to be transported on the final day, the idle cost is 0
-        if j == len(self.bags) - 1:
-            return 0
-
-
-        # Compute the idle cost using the formula from the assignment text
+        # if the total amount of liters = the daily budget there is no idle cost.
         if total_liters == self.liter_budget_per_day:
             return 0
-
 
         idle_cost = idle_time_in_liters ** len(self.bags)
 
         return idle_cost
 
         # ToDo
-    
+
     def compute_sequence_usage_cost(self, i: int, j: int, k: int) -> float:
         """
         Function that computes and returns the cost of using drone k for self.bags[i:j+1], making use of
@@ -193,34 +190,7 @@ class DroneExtinguisher:
         This function does not return anything. 
         """
 
-        # num_bags = len(self.bags)
-        # num_drones = len(self.bag_locations)
-        #
-        # # Initialize the idle cost matrix
-        # self.idle_cost = np.zeros((num_bags, num_drones))
-        #
-        # # Compute the idle cost for each day and drone
-        # for i in range(num_bags):
-        #     for j in range(num_drones):
-        #         self.idle_cost[i][j] = self.compute_idle_cost(i, j, self.liter_budget_per_day)
-        #
-        # # Initialize the optimal cost matrix
-        # self.optimal_cost = np.full((num_bags, num_drones), np.inf)
-        #
-        # # Initialize the base case
-        # for j in range(num_drones):
-        #     self.optimal_cost[num_bags - 1][j] = self.compute_sequence_usage_cost(num_bags - 1, num_bags - 1, j)
-        #
-        # # Fill the dynamic programming table
-        # for i in range(num_bags - 2, -1, -1):
-        #     for j in range(num_drones):
-        #         for k in range(num_drones):
-        #             cost = self.compute_sequence_usage_cost(i, num_bags - 1, j) + \
-        #                    self.idle_cost[i + 1][k] + \
-        #                    self.optimal_cost[i + 1][k]
-        #             if cost < self.optimal_cost[i][j]:
-        #                 self.optimal_cost[i][j] = cost
-        #                 self.next_drone[i][j] = k
+
 
         # TODO
 
@@ -233,9 +203,10 @@ class DroneExtinguisher:
         Returns:
           - float: the lowest cost
         """
-        
+
+        return self.optimal_cost[-1][-1]
+
         # TODO
-        raise NotImplementedError()
 
 
     def backtrace_solution(self) -> typing.List[int]:
@@ -252,6 +223,6 @@ class DroneExtinguisher:
             
         :return: A tuple (leftmost indices, drone list) as described above
         """
-        
+
         # TODO
         raise NotImplementedError()
