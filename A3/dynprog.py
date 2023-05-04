@@ -25,7 +25,7 @@ class DroneExtinguisher:
         self.bag_locations = bag_locations
         self.liter_cost_per_km = liter_cost_per_km
         self.liter_budget_per_day = liter_budget_per_day
-        self.usage_cost = usage_cost # usage_cost[i,k] = additional cost to use drone k to for bag i
+        self.usage_cost = usage_cost  # usage_cost[i,k] = additional cost to use drone k to for bag i
 
         # the number of bags and drones that we have in the problem
         self.num_bags = len(self.bags)
@@ -37,7 +37,7 @@ class DroneExtinguisher:
 
         # idle_cost[i,j] is the amount of time measured in liters that we are idle on a day if we 
         # decide to empty bags[i:j+1] on that day
-        self.idle_cost = -1*np.ones((self.num_bags, self.num_bags))
+        self.idle_cost = -1 * np.ones((self.num_bags, self.num_bags))
 
         # optimal_cost[i,k] is the optimal cost of emptying water bags[:i] with drones[:k+1]
         # this has to be filled in using the dynamic programming function
@@ -64,7 +64,6 @@ class DroneExtinguisher:
         dy = point1[1] - point2[1]
         return math.sqrt(dx ** 2 + dy ** 2)
 
-
     def fill_travel_costs_in_liters(self):
         """
         Function that fills in the self.travel_costs_in_liters data structure such that
@@ -83,7 +82,6 @@ class DroneExtinguisher:
 
             # add cost to travel_costs_in_liters
             self.travel_costs_in_liters.append(cost_in_liters)
-
 
     def compute_sequence_idle_time_in_liters(self, i, j):
         """
@@ -119,7 +117,6 @@ class DroneExtinguisher:
 
         return idle_time
 
-
     def compute_idle_cost(self, i, j, idle_time_in_liters):
         """
         Function that transforms the amount of time that we are idle on a day if we empty self.bags[i:j+1]
@@ -140,7 +137,7 @@ class DroneExtinguisher:
         """
 
         # Compute the total amount of water that needs to be transported
-        total_liters = np.sum(self.bags[i:j+1])
+        total_liters = np.sum(self.bags[i:j + 1])
 
         # If the bags are the last ones to be transported on the final day, the idle cost is 0
         if j == len(self.bags) - 1 and idle_time_in_liters > 0:
@@ -148,12 +145,8 @@ class DroneExtinguisher:
 
         # If the amount of water is larger than the maximum amount that can be transported in a day,
         # return np.inf as cost (it is not possible to transport the water in a single day)
-        if total_liters > self.liter_budget_per_day:
+        if idle_time_in_liters < 0:
             return np.inf
-
-        # if the total amount of liters = the daily budget there is no idle cost.
-        if total_liters == self.liter_budget_per_day:
-            return 0
 
         idle_cost = idle_time_in_liters ** 3
 
@@ -180,7 +173,6 @@ class DroneExtinguisher:
             usage_cost += self.usage_cost[bag_idx][k]
         return usage_cost
 
-
     def dynamic_programming(self):
         """
         The function that uses dynamic programming to solve the problem: compute the optimal way of emptying bags in the forest
@@ -189,38 +181,32 @@ class DroneExtinguisher:
         This function does not return anything. 
         """
         # print(range(1, len(self.bags) + 1))
-        for i in range(1, len(self.bags) + 1):
+        for i in range(len(self.bags)):
             for k in range(self.num_drones):
                 min_cost = np.inf
                 min_cost_idx = -1
-                for j in range(i):
-                    idle_time_in_liters = self.compute_sequence_idle_time_in_liters(j, i - 1)
-                    idle_cost = self.compute_idle_cost(j, i - 1, idle_time_in_liters)
+                for j in range(i + 1):
+                    idle_time_in_liters = self.compute_sequence_idle_time_in_liters(j, i)
+                    idle_cost = self.compute_idle_cost(j, i, idle_time_in_liters)
 
-                    usage_cost_with_k = self.compute_sequence_usage_cost(j, i - 1, k - 1)
-                    usage_cost_without_k = self.compute_sequence_usage_cost(j, i - 1, k)
+                    usage_cost_with_k = self.compute_sequence_usage_cost(j, i, k)
 
-                    cost1 = self.optimal_cost[j, k - 1] + idle_cost + usage_cost_with_k + sum(self.travel_costs_in_liters[j:i])
-                    cost3 = self.optimal_cost[j, k] + idle_cost + usage_cost_without_k + sum(self.travel_costs_in_liters[j:i])
-
+                    current_cost = self.optimal_cost[j, k] + idle_cost + usage_cost_with_k
 
                     # Fill in the self.idle_cost data structure
-                    self.idle_cost[j, i - 1] = idle_cost
+                    self.idle_cost[j, i] = idle_cost
 
-                    if idle_cost == np.inf:
-                        continue
+                    # if idle_cost == np.inf:
+                    #     continue
 
-                    current_cost = min(cost1, cost3)
-
-                    print(f"current_cost: {current_cost} cost1: {cost1} cost3: {cost3}")
+                    # print(f"current_cost: {current_cost} cost1: {cost1} cost3: {cost3}")
 
                     if current_cost < min_cost:
-                        print(f"INSIDE IF current_cost: {current_cost} min_cost: {min_cost}")
+                        # print(f"INSIDE IF current_cost: {current_cost} min_cost: {min_cost}")
                         min_cost = current_cost
                         min_cost_idx = j
 
-
-                self.optimal_cost[i, k] = min_cost
+                self.optimal_cost[i + 1, k] = min_cost
                 self.backtrace_memory[(i, k)] = min_cost_idx
 
         print("-" * 50)
@@ -248,7 +234,6 @@ class DroneExtinguisher:
         return min_cost
 
         # TODO
-
 
     def backtrace_solution(self) -> typing.List[int]:
         """
