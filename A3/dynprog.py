@@ -177,24 +177,28 @@ class DroneExtinguisher:
         In this function, we fill the memory structures self.idle_cost and self.optimal_cost making use of functions defined above. 
         This function does not return anything. 
         """
-        # print(range(1, len(self.bags) + 1))
+        for i in range(self.num_bags):
+            for j in range(i, self.num_bags):
+                idle_time_in_liter = self.compute_sequence_idle_time_in_liters(i, j)
+                self.idle_cost[i, j] = self.compute_idle_cost(i, j, idle_time_in_liter)
+
+
         for i in range(len(self.bags)):
             for k in range(self.num_drones):
                 min_cost = np.inf
                 min_cost_idx = -1
                 for j in range(i + 1):
-                    idle_time_in_liters = self.compute_sequence_idle_time_in_liters(j, i)
-                    idle_cost = self.compute_idle_cost(j, i, idle_time_in_liters)
+                    for l in range(k + 1):
+                        usage_cost_with_k = self.compute_sequence_usage_cost(j, i, l)
+                        current_cost = self.optimal_cost[j, l] + self.idle_cost[j, i] + usage_cost_with_k
 
-                    usage_cost_with_k = self.compute_sequence_usage_cost(j, i, k)
-                    current_cost = self.optimal_cost[j, k] + idle_cost + usage_cost_with_k
-
-                    if current_cost < min_cost:
-                        min_cost = current_cost
-                        min_cost_idx = j
+                        if current_cost < min_cost:
+                            min_cost = current_cost
+                            min_cost_idx = j
 
                 self.optimal_cost[i + 1, k] = min_cost
                 self.backtrace_memory[(i, k)] = min_cost_idx
+
 
     def lowest_cost(self) -> float:
         """
@@ -206,17 +210,9 @@ class DroneExtinguisher:
           - float: the lowest cost
         """
 
-        min_cost = np.inf
-        for k in range(self.num_drones):
-            cost = self.optimal_cost[self.num_bags, k]
-            if cost < min_cost:
-                min_cost = cost
-
         print(self.optimal_cost)
 
-        return min_cost
-
-        # TODO
+        return self.optimal_cost[-1][-1]
 
     def backtrace_solution(self) -> typing.List[int]:
         """
