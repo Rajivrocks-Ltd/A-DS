@@ -177,26 +177,42 @@ class DroneExtinguisher:
         In this function, we fill the memory structures self.idle_cost and self.optimal_cost making use of functions defined above. 
         This function does not return anything. 
         """
+        # Loop over all the bags
         for i in range(self.num_bags):
+            # Loop from the current bag to the last bag (to get an upper triangular matrix)
             for j in range(i, self.num_bags):
+                # Compute the idle time for the sequence from bag i to bag j
                 idle_time_in_liter = self.compute_sequence_idle_time_in_liters(i, j)
+                # Compute the idle cost for the sequence from bag i to bag j and store it
                 self.idle_cost[i, j] = self.compute_idle_cost(i, j, idle_time_in_liter)
 
-
+        # Loop over all the bags
         for i in range(len(self.bags)):
+            # Loop over all the drones
             for k in range(self.num_drones):
+                # Initialize the minimum cost to be infinity and the index of the bag with minimum cost to be -1
                 min_cost = np.inf
                 min_cost_idx = -1
+
+                # Loop over all bags up to the current bag
                 for j in range(i + 1):
+                    # Loop over all drones up to the current drone
                     for l in range(k + 1):
+                        # Compute the usage cost for the sequence from bag j to bag i with l drones
                         usage_cost_with_k = self.compute_sequence_usage_cost(j, i, l)
+                        # Compute the current cost as the sum of the optimal cost for using j bags and l drones,
+                        # the idle cost for the sequence from bag j to bag i, and the usage cost
                         current_cost = self.optimal_cost[j, l] + self.idle_cost[j, i] + usage_cost_with_k
 
+                        # If the current cost is less than the minimum cost, update the minimum cost and the index of
+                        # the bag with minimum cost
                         if current_cost < min_cost:
                             min_cost = current_cost
                             min_cost_idx = j
 
+                # Store the minimum cost for using i+1 bags and k drones
                 self.optimal_cost[i + 1, k] = min_cost
+                # Store the index of the bag with minimum cost for using i+1 bags and k drones
                 self.backtrace_memory[(i, k)] = min_cost_idx
 
 
@@ -229,5 +245,32 @@ class DroneExtinguisher:
         :return: A tuple (leftmost indices, drone list) as described above
         """
 
+        # Initialize the lists
+        leftmost_indices = []
+        drone_list = [-1] * self.num_bags
+
+        # Start backtracking from the end
+        i, k = self.num_bags, self.num_drones - 1
+
+        while i > 0 and k >= 0:
+            # Retrieve the index of the bag with minimum cost
+            min_cost_idx = self.backtrace_memory[(i - 1, k)]
+
+            # Fill in the drone list
+            for bag_idx in range(min_cost_idx, i):
+                drone_list[bag_idx] = k
+
+            # Add the index of the leftmost bag to the list
+            leftmost_indices.append(min_cost_idx)
+
+            # Update the current bag and drone
+            i = min_cost_idx
+            k -= 1
+
+        # Reverse the lists to get the correct order
+        leftmost_indices.reverse()
+        drone_list.reverse()
+
+        return leftmost_indices, drone_list
+
         # TODO
-        raise NotImplementedError()
