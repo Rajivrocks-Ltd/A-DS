@@ -170,13 +170,15 @@ class DroneExtinguisher:
           - float: the cost of usign drone k for bags[i:j+1] 
         """
         # If the drone index is larger than the number of drones, return np.inf as cost, same for bag range
-        if k > self.num_drones or i > self.num_bags or j > self.num_bags:
-            return 0.0
+        try:
 
-        usage_cost = 0.0
-        for bag_idx in range(i, j + 1):
-            usage_cost += self.usage_cost[bag_idx][k]
-        return usage_cost
+            usage_cost = 0.0
+            for bag_idx in range(i, j + 1):
+                usage_cost += self.usage_cost[bag_idx][k]
+            return usage_cost
+
+        except IndexError:
+            return 0.0
 
     def dynamic_programming(self):
         """
