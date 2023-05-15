@@ -99,18 +99,23 @@ class DroneExtinguisher:
         Returns:
           int: the amount of time (measured in liters) that we are idle on the day   
         """
+        # Check if i and j are valid indices
+        try:
 
-        if self.idle_cost[i, j] != -1:
-            return self.idle_cost[i, j]
+            if self.idle_cost[i, j] != -1:
+                return self.idle_cost[i, j]
 
-        # Compute the amount of water in the bags
-        total_water = sum(self.bags[i:j + 1])
+            # Compute the amount of water in the bags
+            total_water = sum(self.bags[i:j + 1])
 
-        # Compute the total cost of transporting the bags to the forest and back
-        total_cost = sum(self.travel_costs_in_liters[i:j + 1])
+            # Compute the total cost of transporting the bags to the forest and back
+            total_cost = sum(self.travel_costs_in_liters[i:j + 1])
 
-        # Compute the idle time
-        idle_time = self.liter_budget_per_day - (total_water + total_cost)
+            # Compute the idle time
+            idle_time = self.liter_budget_per_day - (total_water + total_cost)
+
+        except IndexError:
+            return np.inf
 
         # Store the idle cost for later use
         # self.idle_cost[i, j] = idle_time
@@ -135,7 +140,6 @@ class DroneExtinguisher:
         Returns
           - integer: the cost of being idle on a day corresponding to idle_time_in_liters
         """
-
         # If the bags are the last ones to be transported on the final day, the idle cost is 0
         if j == len(self.bags) - 1 and idle_time_in_liters > 0:
             return 0
@@ -165,6 +169,10 @@ class DroneExtinguisher:
         Returns
           - float: the cost of usign drone k for bags[i:j+1] 
         """
+        # If the drone index is larger than the number of drones, return np.inf as cost, same for bag range
+        if k > self.num_drones or i > self.num_bags or j > self.num_bags:
+            return 0.0
+
         usage_cost = 0.0
         for bag_idx in range(i, j + 1):
             usage_cost += self.usage_cost[bag_idx][k]
@@ -269,7 +277,7 @@ class DroneExtinguisher:
 
         # Reverse the lists to get the correct order
         leftmost_indices.reverse()
-        drone_list.reverse()
+        # drone_list.reverse()
 
         return leftmost_indices, drone_list
 
