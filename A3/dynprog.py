@@ -141,7 +141,7 @@ class DroneExtinguisher:
           - integer: the cost of being idle on a day corresponding to idle_time_in_liters
         """
         # If the bags are the last ones to be transported on the final day, the idle cost is 0
-        if j == len(self.bags) - 1 and idle_time_in_liters > 0:
+        if j == self.num_bags - 1 and idle_time_in_liters > 0:
             return 0
 
         # If the amount of water is larger than the maximum amount that can be transported in a day,
@@ -209,10 +209,10 @@ class DroneExtinguisher:
                     # Loop over all drones up to the current drone
                     for l in range(k + 1):
                         # Compute the usage cost for the sequence from bag j to bag i with l drones
-                        usage_cost_with_k = self.compute_sequence_usage_cost(j, i, l)
+                        usage_cost_with_l = self.compute_sequence_usage_cost(j, i, l)
                         # Compute the current cost as the sum of the optimal cost for using j bags and l drones,
                         # the idle cost for the sequence from bag j to bag i, and the usage cost
-                        current_cost = self.optimal_cost[j, l] + self.idle_cost[j, i] + usage_cost_with_k
+                        current_cost = self.optimal_cost[j, l] + self.idle_cost[j, i] + usage_cost_with_l
 
                         # If the current cost is less than the minimum cost, update the minimum cost and the index of
                         # the bag with minimum cost
